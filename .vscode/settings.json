@@ -6,6 +6,6 @@
   "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
   "prettier.semi": false,
-  "prettier.printWidth": 150,
-  "editor.wordWrapColumn": 150
+  "prettier.printWidth": 120,
+  "editor.wordWrapColumn": 120
 }
