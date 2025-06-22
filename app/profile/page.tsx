@@ -49,8 +49,8 @@ interface UserStats {
   favoriteTime: string
   favoriteCourt: string
 }
-\
-interface Court extends Database["public"]["Tables"]["courts"]["Row"] {}
+
+// interface Court extends Database["public"]["Tables"]["courts"]["Row"] {}
 
 export default function ProfilePage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -104,10 +104,12 @@ export default function ProfilePage() {
       // Fetch user bookings
       const { data: bookingsData, error: bookingsError } = await supabase
         .from("bookings")
-        .select(`
+        .select(
+          `
           *,
           courts:court_id (name, hourly_rate)
-        `)
+        `
+        )
         .eq("user_id", user.id)
         .order("booking_date", { ascending: false })
 
@@ -150,7 +152,7 @@ export default function ProfilePage() {
 
     const now = new Date()
     const upcomingBookings = bookingsData.filter(
-      (b) => new Date(b.booking_date) >= now && (b.status === "confirmed" || b.status === "pending"),
+      (b) => new Date(b.booking_date) >= now && (b.status === "confirmed" || b.status === "pending")
     ).length
 
     const completedBookings = bookingsData.filter((b) => b.status === "completed").length
@@ -267,8 +269,14 @@ export default function ProfilePage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: { className: "bg-yellow-100 text-yellow-800", icon: AlertCircle },
-      confirmed: { className: "bg-green-100 text-green-800", icon: CheckCircle },
+      pending: {
+        className: "bg-yellow-100 text-yellow-800",
+        icon: AlertCircle,
+      },
+      confirmed: {
+        className: "bg-green-100 text-green-800",
+        icon: CheckCircle,
+      },
       cancelled: { className: "bg-red-100 text-red-800", icon: X },
       completed: { className: "bg-blue-100 text-blue-800", icon: CheckCircle },
     }
@@ -313,10 +321,10 @@ export default function ProfilePage() {
   }
 
   const upcomingBookings = bookings.filter(
-    (b) => new Date(b.booking_date) >= new Date() && (b.status === "confirmed" || b.status === "pending"),
+    (b) => new Date(b.booking_date) >= new Date() && (b.status === "confirmed" || b.status === "pending")
   )
   const pastBookings = bookings.filter(
-    (b) => new Date(b.booking_date) < new Date() || b.status === "completed" || b.status === "cancelled",
+    (b) => new Date(b.booking_date) < new Date() || b.status === "completed" || b.status === "cancelled"
   )
 
   return (
@@ -542,7 +550,12 @@ export default function ProfilePage() {
                       <Input
                         id="full_name"
                         value={profileData.full_name}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, full_name: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            full_name: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -558,7 +571,12 @@ export default function ProfilePage() {
                       <Input
                         id="phone"
                         value={profileData.phone}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, phone: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
                         placeholder="Enter your phone number"
                       />
                     </div>
