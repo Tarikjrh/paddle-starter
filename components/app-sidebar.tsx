@@ -1,8 +1,17 @@
-"use client"
+"use client";
 
-import { Calendar, Home, Settings, Users, BarChart3, Clock, DollarSign } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import {
+  Calendar,
+  Home,
+  Settings,
+  Users,
+  BarChart3,
+  Clock,
+  DollarSign,
+  CalendarDays,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -15,18 +24,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/hooks/use-auth"
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  const { profile, signOut } = useAuth()
+  const pathname = usePathname();
+  const { profile, signOut } = useAuth();
 
   const navigationItems = [
     {
       title: "Overview",
       url: "/dashboard",
       icon: Home,
+      roles: ["admin", "moderator"],
+    },
+    {
+      title: "Calendar",
+      url: "/dashboard/calendar",
+      icon: CalendarDays,
       roles: ["admin", "moderator"],
     },
     {
@@ -65,9 +80,11 @@ export function AppSidebar() {
       icon: Settings,
       roles: ["admin"],
     },
-  ]
+  ];
 
-  const filteredItems = navigationItems.filter((item) => item.roles.includes(profile?.role || "user"))
+  const filteredItems = navigationItems.filter((item) =>
+    item.roles.includes(profile?.role || "user")
+  );
 
   return (
     <Sidebar variant="inset">
@@ -121,5 +138,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
