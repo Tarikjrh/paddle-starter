@@ -105,7 +105,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
       .select("*")
       .eq("court_id", court.id)
       .eq("booking_date", dateStr)
-      .in("status", ["pending", "confirmed","completed"])
+      .in("status", ["pending", "confirmed", "completed"])
 
     if (error) {
       console.error("Error fetching bookings:", error)
@@ -207,7 +207,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                disabled={(date) => date < new Date(Date.now()-1* 24 * 60 * 60 * 1000) || date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+                disabled={(date) => date < new Date() || date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
                 className="rounded-md border mt-2"
               />
             </div>
