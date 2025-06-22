@@ -4,20 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { TrendingUp, TrendingDown, Calendar, Clock, Activity } from "lucide-react"
 import { supabase } from "@/lib/supabase"
@@ -68,10 +55,12 @@ export default function AnalyticsPage() {
       // Fetch bookings data
       const { data: bookings } = await supabase
         .from("bookings")
-        .select(`
+        .select(
+          `
           *,
           courts:court_id (name)
-        `)
+        `
+        )
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
 
@@ -266,14 +255,8 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{data.bookingsByDay.reduce((sum, day) => sum + day.bookings, 0)}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {bookingTrend > 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-              )}
-              <span className={bookingTrend > 0 ? "text-green-500" : "text-red-500"}>
-                {Math.abs(bookingTrend).toFixed(1)}%
-              </span>
+              {bookingTrend > 0 ? <TrendingUp className="h-3 w-3 text-green-500 mr-1" /> : <TrendingDown className="h-3 w-3 text-red-500 mr-1" />}
+              <span className={bookingTrend > 0 ? "text-green-500" : "text-red-500"}>{Math.abs(bookingTrend).toFixed(1)}%</span>
               <span className="ml-1">from previous period</span>
             </div>
           </CardContent>
@@ -285,18 +268,10 @@ export default function AnalyticsPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${data.bookingsByDay.reduce((sum, day) => sum + day.revenue, 0).toFixed(2)}
-            </div>
+            <div className="text-2xl font-bold">${data.bookingsByDay.reduce((sum, day) => sum + day.revenue, 0).toFixed(2)}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {revenueTrend > 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-              )}
-              <span className={revenueTrend > 0 ? "text-green-500" : "text-red-500"}>
-                {Math.abs(revenueTrend).toFixed(1)}%
-              </span>
+              {revenueTrend > 0 ? <TrendingUp className="h-3 w-3 text-green-500 mr-1" /> : <TrendingDown className="h-3 w-3 text-red-500 mr-1" />}
+              <span className={revenueTrend > 0 ? "text-green-500" : "text-red-500"}>{Math.abs(revenueTrend).toFixed(1)}%</span>
               <span className="ml-1">from previous period</span>
             </div>
           </CardContent>
@@ -309,11 +284,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round(
-                data.courtUtilization.reduce((sum, court) => sum + court.utilization, 0) /
-                  data.courtUtilization.length || 0,
-              )}
-              %
+              {Math.round(data.courtUtilization.reduce((sum, court) => sum + court.utilization, 0) / data.courtUtilization.length || 0)}%
             </div>
             <p className="text-xs text-muted-foreground">Across all courts</p>
           </CardContent>
@@ -341,12 +312,12 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Bookings Over Time */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Bookings Over Time</CardTitle>
             <CardDescription>Daily booking trends and revenue</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pb-4">
             <ChartContainer
               config={{
                 bookings: {
@@ -358,10 +329,10 @@ export default function AnalyticsPage() {
                   color: "hsl(var(--chart-2))",
                 },
               }}
-              className="h-[300px]"
+              className="h-[300px] w-full"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.bookingsByDay}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+                <LineChart data={data.bookingsByDay} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
@@ -375,12 +346,12 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Hourly Distribution */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Hourly Booking Distribution</CardTitle>
             <CardDescription>Popular time slots throughout the day</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pb-4">
             <ChartContainer
               config={{
                 bookings: {
@@ -388,10 +359,10 @@ export default function AnalyticsPage() {
                   color: "hsl(var(--chart-1))",
                 },
               }}
-              className="h-[300px]"
+              className="h-[300px] w-full"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.bookingsByHour}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+                <BarChart data={data.bookingsByHour} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="hour" />
                   <YAxis />
@@ -404,12 +375,12 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Booking Status Distribution */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Booking Status Distribution</CardTitle>
             <CardDescription>Breakdown of booking statuses</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 pb-4">
             <ChartContainer
               config={{
                 count: {
@@ -417,10 +388,10 @@ export default function AnalyticsPage() {
                   color: "hsl(var(--chart-1))",
                 },
               }}
-              className="h-[300px]"
+              className="h-[300px] w-full"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+              <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+                <PieChart margin={{ top: 10, right: 30, left: 30, bottom: 0 }}>
                   <Pie
                     data={data.bookingsByStatus}
                     cx="50%"
@@ -442,7 +413,7 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Court Utilization */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Court Utilization</CardTitle>
             <CardDescription>Usage percentage by court</CardDescription>
@@ -461,10 +432,7 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${court.utilization}%` }}
-                    />
+                    <div className="bg-orange-500 h-2 rounded-full transition-all duration-300" style={{ width: `${court.utilization}%` }} />
                   </div>
                 </div>
               ))}
