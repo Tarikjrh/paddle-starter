@@ -27,7 +27,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     requirePhoneNumber: false,
   })
 
-  console.log('ssss',systemSettings)
   const [phoneNumber, setPhoneNumber] = useState("")
 
   // Add this useEffect to fetch system settings
@@ -37,7 +36,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   // Add this function to fetch system settings
   const fetchSystemSettings = async () => {
-    const { data } = await supabase.from("settings").select("key, value").eq("key",     "require_phone_number").single()
+    const { data } = await supabase.from("settings").select("key, value").eq("key", "require_phone_number").single()
 
     if (data) {
       setSystemSettings({
@@ -144,7 +143,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={loading}>
+              <Button type="submit" className="w-full " disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
@@ -163,19 +162,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   required
                 />
               </div>
-         
-                <div className="space-y-2">
-                  <Label htmlFor="signup-phone">Phone Number</Label>
-                  <Input
-                    id="signup-phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    required={systemSettings.requirePhoneNumber}
-                  />
-                </div>
-       
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-phone">Phone Number</Label>
+                <Input
+                  id="signup-phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  required={systemSettings.requirePhoneNumber}
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input
@@ -198,7 +197,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={loading}>
+              <Button type="submit" className="w-full btn" disabled={loading}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>

@@ -176,7 +176,7 @@ export default function CourtsPage() {
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-orange-500 hover:bg-orange-600">
+            <Button onClick={resetForm}>
               <Plus className="h-4 w-4 mr-2" />
               Add Court
             </Button>
@@ -279,7 +279,7 @@ export default function CourtsPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="flex-1 bg-orange-500 hover:bg-orange-600">
+                <Button type="submit" className="flex-1 ">
                   {editingCourt ? "Update" : "Create"} Court
                 </Button>
               </div>
@@ -362,7 +362,7 @@ export default function CourtsPage() {
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No courts found</h3>
           <p className="text-gray-500 mb-4">Get started by creating your first paddle court.</p>
-          <Button onClick={() => setShowDialog(true)} className="bg-orange-500 hover:bg-orange-600">
+          <Button onClick={() => setShowDialog(true)} className="">
             <Plus className="h-4 w-4 mr-2" />
             Add Your First Court
           </Button>

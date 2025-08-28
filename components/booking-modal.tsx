@@ -12,6 +12,7 @@ import { CalendarIcon, Clock, DollarSign } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
+import { formatDateForDB } from "@/lib/utils"
 import type { Database } from "@/lib/supabase"
 
 type Court = Database["public"]["Tables"]["courts"]["Row"]
@@ -98,7 +99,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
   }
 
   const fetchBookingsForDate = async (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0]
+    const dateStr = formatDateForDB(date)
 
     const { data, error } = await supabase
       .from("bookings")
@@ -157,7 +158,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
       const bookings = selectedSlots.map((slot) => ({
         user_id: user.id,
         court_id: court.id,
-        booking_date: selectedDate.toISOString().split("T")[0],
+        booking_date: formatDateForDB(selectedDate),
         start_time: slot + ":00",
         end_time: (Number.parseInt(slot.split(":")[0]) + 1).toString().padStart(2, "0") + ":00",
         total_amount: court.hourly_rate,
@@ -232,7 +233,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
                       variant={selected ? "default" : "outline"}
                       size="sm"
                       className={`
-                        ${selected ? "bg-orange-500 hover:bg-orange-600" : ""}
+                        ${selected ? "" : ""}
                         ${!available ? "opacity-50 cursor-not-allowed" : ""}
                       `}
                       disabled={!available}
@@ -298,7 +299,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
           <Button
             onClick={handleBooking}
             disabled={loading || selectedSlots.length === 0 || !selectedDate}
-            className="flex-1 bg-orange-500 hover:bg-orange-600"
+            className="flex-1 "
           >
             {loading ? "Booking..." : `Book ${selectedSlots.length} Slot${selectedSlots.length !== 1 ? "s" : ""}`}
           </Button>

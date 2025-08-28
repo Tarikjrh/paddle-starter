@@ -8,9 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { CalendarIcon, ChevronLeft, ChevronRight, Clock, User, MapPin, Edit, CheckCircle, XCircle, Eye } from "lucide-react"
+import {
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  User,
+  MapPin,
+  Edit,
+  CheckCircle,
+  XCircle,
+  Eye,
+} from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { formatDateForDB } from "@/lib/utils"
 import type { Database } from "@/lib/supabase"
 
 type Booking = Database["public"]["Tables"]["bookings"]["Row"] & {
@@ -101,8 +113,8 @@ export default function CalendarPage() {
           courts:court_id (name, hourly_rate)
         `
         )
-        .gte("booking_date", startDate.toISOString().split("T")[0])
-        .lte("booking_date", endDate.toISOString().split("T")[0])
+        .gte("booking_date", formatDateForDB(startDate))
+        .lte("booking_date", formatDateForDB(endDate))
         .order("booking_date")
         .order("start_time")
 
@@ -115,7 +127,11 @@ export default function CalendarPage() {
       if (bookingsError) throw bookingsError
 
       // Fetch courts
-      const { data: courtsData, error: courtsError } = await supabase.from("courts").select("*").eq("is_active", true).order("name")
+      const { data: courtsData, error: courtsError } = await supabase
+        .from("courts")
+        .select("*")
+        .eq("is_active", true)
+        .order("name")
 
       if (courtsError) throw courtsError
 
@@ -154,7 +170,9 @@ export default function CalendarPage() {
     // Add days of current month
     for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
       const date = new Date(year, month, day)
-      const dayBookings = bookings.filter((booking) => new Date(booking.booking_date).toDateString() === date.toDateString())
+      const dayBookings = bookings.filter(
+        (booking) => new Date(booking.booking_date).toDateString() === date.toDateString()
+      )
 
       days.push({
         date,
@@ -282,7 +300,10 @@ export default function CalendarPage() {
       return formatDate(currentDate)
     } else if (view === "week") {
       const weekDates = getWeekDates()
-      return `${weekDates[0].toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${weekDates[6].toLocaleDateString("en-US", {
+      return `${weekDates[0].toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })} - ${weekDates[6].toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -357,9 +378,16 @@ export default function CalendarPage() {
         <div className="grid grid-cols-8 border-b">
           <div className="p-2 border-r"></div>
           {weekDates.map((date, index) => (
-            <div key={index} className={`p-2 text-center ${date.toDateString() === new Date().toDateString() ? "bg-blue-50" : ""}`}>
+            <div
+              key={index}
+              className={`p-2 text-center ${date.toDateString() === new Date().toDateString() ? "bg-blue-50" : ""}`}
+            >
               <div className="text-xs text-gray-500">{date.toLocaleDateString("en-US", { weekday: "short" })}</div>
-              <div className={`font-medium ${date.toDateString() === new Date().toDateString() ? "text-blue-600" : ""}`}>{date.getDate()}</div>
+              <div
+                className={`font-medium ${date.toDateString() === new Date().toDateString() ? "text-blue-600" : ""}`}
+              >
+                {date.getDate()}
+              </div>
             </div>
           ))}
         </div>
@@ -376,7 +404,9 @@ export default function CalendarPage() {
           {weekDates.map((date, dateIndex) => (
             <div key={dateIndex} className="border-r last:border-r-0">
               {timeSlots.map((time, timeIndex) => {
-                const slotBookings = getBookingsForDate(date).filter((booking) => formatTime(booking.start_time) === time)
+                const slotBookings = getBookingsForDate(date).filter(
+                  (booking) => formatTime(booking.start_time) === time
+                )
 
                 return (
                   <div key={`${dateIndex}-${timeIndex}`} className="h-20 border-b p-1 overflow-hidden">
@@ -445,7 +475,11 @@ export default function CalendarPage() {
             {/* Bookings for this day */}
             <div className="space-y-1">
               {day.bookings.slice(0, 3).map((booking) => (
-                <div key={booking.id} className="group relative cursor-pointer" onClick={() => handleBookingClick(booking)}>
+                <div
+                  key={booking.id}
+                  className="group relative cursor-pointer"
+                  onClick={() => handleBookingClick(booking)}
+                >
                   <div
                     className={`
                     text-xs p-1 rounded truncate transition-all duration-200
@@ -477,13 +511,17 @@ export default function CalendarPage() {
                     <div>{booking.profiles?.full_name || "Unknown User"}</div>
                     <div>{booking.profiles?.email}</div>
                     <div className="mt-1">
-                      <Badge className="text-xs">{booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}</Badge>
+                      <Badge className="text-xs">
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </Badge>
                     </div>
                   </div>
                 </div>
               ))}
 
-              {day.bookings.length > 3 && <div className="text-xs text-gray-500 p-1">+{day.bookings.length - 3} more</div>}
+              {day.bookings.length > 3 && (
+                <div className="text-xs text-gray-500 p-1">+{day.bookings.length - 3} more</div>
+              )}
             </div>
           </div>
         ))}
@@ -536,13 +574,28 @@ export default function CalendarPage() {
             </CardTitle>
             <div className="flex items-center space-x-4">
               <div className="flex bg-muted rounded-md p-1">
-                <Button variant={view === "day" ? "default" : "ghost"} size="sm" onClick={() => setView("day")} className="rounded-sm">
+                <Button
+                  variant={view === "day" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setView("day")}
+                  className="rounded-sm"
+                >
                   Day
                 </Button>
-                <Button variant={view === "week" ? "default" : "ghost"} size="sm" onClick={() => setView("week")} className="rounded-sm">
+                <Button
+                  variant={view === "week" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setView("week")}
+                  className="rounded-sm"
+                >
                   Week
                 </Button>
-                <Button variant={view === "month" ? "default" : "ghost"} size="sm" onClick={() => setView("month")} className="rounded-sm">
+                <Button
+                  variant={view === "month" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setView("month")}
+                  className="rounded-sm"
+                >
                   Month
                 </Button>
               </div>
@@ -605,7 +658,9 @@ export default function CalendarPage() {
                   <div>
                     <div className="font-medium">{selectedBooking.profiles?.full_name || "Unknown User"}</div>
                     <div className="text-sm text-gray-600">{selectedBooking.profiles?.email}</div>
-                    {selectedBooking.profiles?.phone && <div className="text-sm text-gray-600">{selectedBooking.profiles.phone}</div>}
+                    {selectedBooking.profiles?.phone && (
+                      <div className="text-sm text-gray-600">{selectedBooking.profiles.phone}</div>
+                    )}
                   </div>
                 </div>
 
@@ -652,7 +707,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleUpdateBooking}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600"
+                  className="flex-1 "
                   disabled={editingStatus === selectedBooking.status && editingNotes === (selectedBooking.notes || "")}
                 >
                   <Edit className="h-4 w-4 mr-1" />

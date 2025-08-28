@@ -41,9 +41,7 @@ export function useAuth() {
 
   const fetchProfile = async (userId: string) => {
     try {
-    console.log("userId",userId)
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
-      console.log('data',data)
 
       if (error) throw error
       setProfile(data)

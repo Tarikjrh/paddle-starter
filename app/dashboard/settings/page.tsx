@@ -96,20 +96,20 @@ export default function SettingsPage() {
         updateSetting(
           "max_slots_per_booking",
           settings.maxSlotsPerBooking,
-          "Maximum number of time slots a user can book at once",
+          "Maximum number of time slots a user can book at once"
         ),
         updateSetting("booking_advance_days", settings.bookingAdvanceDays, "How many days in advance users can book"),
         updateSetting(
           "cancellation_hours",
           settings.cancellationHours,
-          "Minimum hours before booking to allow cancellation",
+          "Minimum hours before booking to allow cancellation"
         ),
         updateSetting("operating_hours", settings.operatingHours, "Daily operating hours"),
         updateSetting("slot_duration", settings.slotDuration, "Duration of each time slot in minutes"),
         updateSetting(
           "allow_multiple_slots",
           settings.allowMultipleSlots,
-          "Allow users to book multiple consecutive slots",
+          "Allow users to book multiple consecutive slots"
         ),
       ])
 
@@ -129,12 +129,12 @@ export default function SettingsPage() {
         updateSetting(
           "auto_confirm_bookings",
           settings.autoConfirmBookings,
-          "Automatically confirm bookings without manual approval",
+          "Automatically confirm bookings without manual approval"
         ),
         updateSetting(
           "require_phone_number",
           settings.requirePhoneNumber,
-          "Require phone number during user registration",
+          "Require phone number during user registration"
         ),
         updateSetting("maintenance_mode", settings.maintenanceMode, "Enable maintenance mode to disable bookings"),
       ])
@@ -305,11 +305,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button
-                onClick={handleSaveBookingSettings}
-                disabled={saving}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
+              <Button onClick={handleSaveBookingSettings} disabled={saving} className="">
                 {saving ? "Saving..." : "Save Booking Settings"}
               </Button>
             </CardContent>
@@ -369,11 +365,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button
-                onClick={handleSaveSystemSettings}
-                disabled={saving}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
+              <Button onClick={handleSaveSystemSettings} disabled={saving} className="">
                 {saving ? "Saving..." : "Save System Settings"}
               </Button>
             </CardContent>
@@ -419,7 +411,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button disabled className="bg-orange-500 hover:bg-orange-600">
+              <Button disabled className="">
                 Save Notification Settings
               </Button>
             </CardContent>

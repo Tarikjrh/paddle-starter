@@ -69,7 +69,7 @@ export default function UsersPage() {
             total_spent: totalSpent,
             last_booking: lastBooking,
           }
-        }),
+        })
       )
 
       setUsers(usersWithStats)
@@ -405,7 +405,7 @@ export default function UsersPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 bg-orange-500 hover:bg-orange-600">
+              <Button type="submit" className="flex-1 ">
                 Update User
               </Button>
             </div>

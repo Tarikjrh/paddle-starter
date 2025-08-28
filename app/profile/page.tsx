@@ -23,6 +23,7 @@ import {
   MapPin,
   Phone,
   Mail,
+  Home,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
@@ -342,6 +343,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <Button onClick={() => router.push("/")} variant="outline">
+            <Home className="h-4 w-4" />
             Back to Home
           </Button>
         </div>
@@ -448,7 +450,7 @@ export default function ProfilePage() {
                     <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming bookings</h3>
                     <p className="text-gray-500 mb-4">Book a court to see your upcoming reservations here.</p>
-                    <Button onClick={() => handleBookCourt()} className="bg-orange-500 hover:bg-orange-600">
+                    <Button onClick={() => handleBookCourt()} className="">
                       Book a Court
                     </Button>
                   </div>
@@ -517,7 +519,7 @@ export default function ProfilePage() {
                     <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
                     <p className="text-gray-500 mb-4">Start by booking your first court.</p>
-                    <Button onClick={() => handleBookCourt()} className="bg-orange-500 hover:bg-orange-600">
+                    <Button onClick={() => handleBookCourt()} className="">
                       Book Your First Court
                     </Button>
                   </div>
@@ -585,7 +587,7 @@ export default function ProfilePage() {
                       <Button onClick={() => setEditingProfile(false)} variant="outline" className="flex-1">
                         Cancel
                       </Button>
-                      <Button onClick={handleProfileUpdate} className="flex-1 bg-orange-500 hover:bg-orange-600">
+                      <Button onClick={handleProfileUpdate} className="flex-1 ">
                         Save Changes
                       </Button>
                     </div>

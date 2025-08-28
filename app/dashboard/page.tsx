@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, DollarSign, Users, TrendingUp, Activity } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button"
+import { formatDateForDB } from "@/lib/utils"
 
 interface DashboardStats {
   totalBookings: number
@@ -34,7 +36,7 @@ export default function DashboardPage() {
 
   const fetchDashboardStats = async () => {
     try {
-      const today = new Date().toISOString().split("T")[0]
+      const today = formatDateForDB(new Date())
 
       // Total bookings
       const { count: totalBookings } = await supabase.from("bookings").select("*", { count: "exact", head: true })
@@ -100,6 +102,44 @@ export default function DashboardPage() {
       </div>
     )
   }
+  const sendEmail = async () => {
+    try {
+      // Get the current session token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        alert("You must be logged in to send emails")
+        return
+      }
+
+      const response = await fetch("/api/send-mail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          to: "tarik2test@gmail.com",
+          subject: "Test Email",
+          message: "This is a test email from the dashboard.",
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to send email")
+      }
+
+      const result = await response.json()
+      console.log("Email sent successfully:", result)
+      alert("Email sent successfully!")
+    } catch (error) {
+      console.error("Error sending email:", error)
+      alert("Failed to send email: " + error.message)
+    }
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -107,7 +147,9 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
         <p className="text-muted-foreground">Welcome back! Here's what's happening with your paddle courts.</p>
       </div>
-
+      {process.env.NODE_ENV === "development" && profile?.role === "admin" && (
+        <Button onClick={sendEmail}>Test Email (Dev Only)</Button>
+      )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
