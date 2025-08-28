@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { formatDateForDB } from "@/lib/utils"
+import { calculateTotalBookingAmount, getPricingBreakdown } from "@/lib/pricing"
 import type { Database } from "@/lib/supabase"
 
 type Court = Database["public"]["Tables"]["courts"]["Row"]
@@ -32,6 +33,8 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
   const [loading, setLoading] = useState(false)
   const [existingBookings, setExistingBookings] = useState<Booking[]>([])
   const [maxSlots, setMaxSlots] = useState(2)
+  const [dynamicTotal, setDynamicTotal] = useState<number>(0)
+  const [pricingBreakdown, setPricingBreakdown] = useState<Array<{ timeSlot: string; price: number }>>([])
 
   // Add state for system settings at the top of the component
   const [systemSettings, setSystemSettings] = useState({
@@ -74,6 +77,16 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
     }
   }, [selectedDate, court.id])
 
+  // Add useEffect to recalculate pricing when slots or date changes
+  useEffect(() => {
+    if (selectedDate && selectedSlots.length > 0) {
+      calculateDynamicPricing()
+    } else {
+      setDynamicTotal(0)
+      setPricingBreakdown([])
+    }
+  }, [selectedDate, selectedSlots, court.id])
+
   const fetchSettings = async () => {
     const { data } = await supabase.from("settings").select("value").eq("key", "max_slots_per_booking").single()
 
@@ -87,7 +100,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
     const { data } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["auto_confirm_bookings", "maintenance_mode"])
+      .in("key", ["auto_confirm_bookings", "maintenance_mode", "slot_duration", "operating_hours"])
 
     if (data) {
       const settingsMap = new Map(data.map((s) => [s.key, s.value]))
@@ -134,8 +147,25 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
     })
   }
 
+  const calculateDynamicPricing = async () => {
+    if (!selectedDate || selectedSlots.length === 0) return
+
+    try {
+      const total = await calculateTotalBookingAmount(court.id, selectedDate, selectedSlots)
+      const breakdown = await getPricingBreakdown(court.id, selectedDate, selectedSlots)
+
+      setDynamicTotal(total)
+      setPricingBreakdown(breakdown)
+    } catch (error) {
+      console.error("Error calculating dynamic pricing:", error)
+      // Fall back to default pricing
+      setDynamicTotal(selectedSlots.length * court.hourly_rate)
+      setPricingBreakdown(selectedSlots.map((slot) => ({ timeSlot: slot, price: court.hourly_rate })))
+    }
+  }
+
   const calculateTotal = () => {
-    return selectedSlots.length * court.hourly_rate
+    return dynamicTotal > 0 ? dynamicTotal : selectedSlots.length * court.hourly_rate
   }
 
   // Update the handleBooking function to use auto-confirm setting
@@ -154,6 +184,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
 
     try {
       const defaultStatus = systemSettings.autoConfirmBookings ? "confirmed" : "pending"
+      const totalAmount = calculateTotal()
 
       const bookings = selectedSlots.map((slot) => ({
         user_id: user.id,
@@ -161,7 +192,10 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
         booking_date: formatDateForDB(selectedDate),
         start_time: slot + ":00",
         end_time: (Number.parseInt(slot.split(":")[0]) + 1).toString().padStart(2, "0") + ":00",
-        total_amount: court.hourly_rate,
+        total_amount:
+          dynamicTotal > 0
+            ? pricingBreakdown.find((p) => p.timeSlot === slot)?.price || court.hourly_rate
+            : court.hourly_rate,
         status: defaultStatus,
         notes: notes || null,
       }))
@@ -208,7 +242,7 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                disabled={(date) => date < new Date() || date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+                fromDate={new Date()}
                 className="rounded-md border mt-2"
               />
             </div>
@@ -270,10 +304,27 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
               <div className="space-y-1 text-sm">
                 <p>Court: {court.name}</p>
                 <p>Date: {selectedDate?.toLocaleDateString()}</p>
-                <p>Time Slots: {selectedSlots.join(", ")}</p>
-                <p className="font-semibold">
-                  Total: ${calculateTotal().toFixed(2)} ({selectedSlots.length} × ${court.hourly_rate})
-                </p>
+                <div className="space-y-1">
+                  <p className="font-medium">Time Slots & Pricing:</p>
+                  {pricingBreakdown.length > 0 ? (
+                    <div className="ml-2 space-y-1">
+                      {pricingBreakdown.map((item, index) => (
+                        <p key={index} className="flex justify-between">
+                          <span>{item.timeSlot}</span>
+                          <span>${item.price.toFixed(2)}</span>
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="ml-2">
+                      <p>Time Slots: {selectedSlots.join(", ")}</p>
+                      <p>Rate: ${court.hourly_rate}/hour</p>
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2 border-t border-orange-300">
+                  <p className="font-semibold text-base">Total: ${calculateTotal().toFixed(2)}</p>
+                </div>
               </div>
             </CardContent>
           </Card>

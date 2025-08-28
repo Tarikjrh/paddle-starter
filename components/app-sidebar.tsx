@@ -11,6 +11,7 @@ import {
   CalendarDays,
   LogOut,
   Shield,
+  TrendingUp,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -63,6 +64,12 @@ export function AppSidebar() {
       url: "/dashboard/courts",
       icon: Clock,
       roles: ["admin", "moderator"],
+    },
+    {
+      title: "Pricing",
+      url: "/dashboard/pricing",
+      icon: TrendingUp,
+      roles: ["admin"],
     },
     {
       title: "Users",

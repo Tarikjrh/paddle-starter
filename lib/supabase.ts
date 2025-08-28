@@ -108,6 +108,37 @@ export type Database = {
           description?: string | null
         }
       }
+      pricing_schedules: {
+        Row: {
+          id: string
+          court_id: string
+          name: string
+          start_time: string
+          end_time: string
+          rate: number
+          days_of_week: number[]
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          court_id: string
+          name: string
+          start_time: string
+          end_time: string
+          rate: number
+          days_of_week?: number[]
+          is_active?: boolean
+        }
+        Update: {
+          name?: string
+          start_time?: string
+          end_time?: string
+          rate?: number
+          days_of_week?: number[]
+          is_active?: boolean
+        }
+      }
     }
   }
 }
