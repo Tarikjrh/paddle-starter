@@ -133,3 +133,53 @@ CREATE POLICY "Admins and moderators can update bookings" ON public.bookings
             WHERE id = auth.uid() AND role IN ('admin', 'moderator')
         )
     );
+
+
+CREATE TABLE public.notifications (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    booking_id UUID REFERENCES public.bookings(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.handle_new_booking()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_court_name TEXT;
+    v_user_name TEXT;
+BEGIN
+    -- Get court name
+    SELECT name INTO v_court_name
+    FROM public.courts
+    WHERE id = NEW.court_id;
+
+    -- Get user full name
+    SELECT full_name INTO v_user_name
+    FROM public.profiles
+    WHERE id = NEW.user_id;
+
+    -- Insert notification message
+    INSERT INTO public.notifications (booking_id, user_id, message)
+    VALUES (
+        NEW.id,
+        NEW.user_id,
+        format(
+            '📅 %s booked %s on %s from %s to %s',
+            v_user_name,
+            v_court_name,
+            to_char(NEW.booking_date, 'YYYY-MM-DD'),
+            to_char(NEW.start_time, 'HH24:MI'),
+            to_char(NEW.end_time, 'HH24:MI')
+        )
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_new_booking
+AFTER INSERT ON public.bookings
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_booking();
