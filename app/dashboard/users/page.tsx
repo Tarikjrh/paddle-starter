@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import Link from "next/link"
 import { Users, Search, Filter, Edit, Shield, Calendar } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -295,10 +296,12 @@ export default function UsersPage() {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{user.full_name || "No name"}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                      </div>
+                      <Link href={`/dashboard/users/${user.id}`} className="block hover:underline">
+                        <div>
+                          <div className="font-medium">{user.full_name || "No name"}</div>
+                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                        </div>
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">{user.phone || "No phone"}</div>
@@ -315,10 +318,13 @@ export default function UsersPage() {
                       {user.last_booking ? new Date(user.last_booking).toLocaleDateString() : "Never"}
                     </TableCell>
                     <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
+                    <TableCell className="flex items-center gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleEdit(user)}>
                         <Edit className="h-4 w-4" />
                       </Button>
+                      <Link href={`/dashboard/users/${user.id}`}>
+                        <Button size="sm">View</Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}
