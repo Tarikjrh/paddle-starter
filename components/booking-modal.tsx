@@ -27,7 +27,7 @@ interface BookingModalProps {
 
 export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
   const { user } = useAuth()
-  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
   const [notes, setNotes] = useState("")
   const [loading, setLoading] = useState(false)
@@ -40,27 +40,57 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
   const [systemSettings, setSystemSettings] = useState({
     autoConfirmBookings: false,
     maintenanceMode: false,
+    slotDuration: 60,
+    operatingHours: { start: "06:00", end: "23:00" },
   })
+  // timeSlots will be generated based on operatingHours and slotDuration
+  const [timeSlots, setTimeSlots] = useState<string[]>([])
 
-  const timeSlots = [
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-  ]
+  const formatTwo = (n: number) => n.toString().padStart(2, "0")
+
+  const minutesFromHHMM = (hhmm: string) => {
+    const [h, m] = hhmm.split(":").map((s) => Number.parseInt(s, 10) || 0)
+    return h * 60 + m
+  }
+
+  const hhmmFromMinutes = (mins: number) => {
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return `${formatTwo(h)}:${formatTwo(m)}`
+  }
+
+  const generateTimeSlots = (operatingHours: { start: string; end: string } | null, slotDuration: number) => {
+    const fallbackStart = "06:00"
+    const fallbackEnd = "23:00"
+
+    const startStr = operatingHours?.start || fallbackStart
+    const endStr = operatingHours?.end || fallbackEnd
+
+    const startMin = minutesFromHHMM(startStr)
+    const endMin = minutesFromHHMM(endStr)
+
+    // If values invalid, return a sensible fallback (single start slot)
+    if (slotDuration <= 0 || startMin >= endMin) {
+      return [startStr]
+    }
+
+    const slots: string[] = []
+
+    // Always include the first slot at the start of operating hours
+    let current = startMin
+    // Add slots while the slot end doesn't exceed operating end
+    while (current + slotDuration <= endMin) {
+      slots.push(hhmmFromMinutes(current))
+      current += slotDuration
+    }
+
+    // If no slots were generated (very short window), ensure at least the start exists
+    if (slots.length === 0) {
+      return [startStr]
+    }
+
+    return slots
+  }
 
   useEffect(() => {
     fetchSettings()
@@ -104,10 +134,34 @@ export function BookingModal({ court, isOpen, onClose }: BookingModalProps) {
 
     if (data) {
       const settingsMap = new Map(data.map((s) => [s.key, s.value]))
+
+      // Parse slot duration (stored as minutes number string)
+      const slotDurationVal = Number.parseInt(settingsMap.get("slot_duration") as string) || 60
+
+      // Parse operating hours which is stored as JSON string like {"start": "06:00", "end": "23:00"}
+      let operatingHoursVal = { start: "06:00", end: "23:00" }
+      try {
+        const raw = settingsMap.get("operating_hours") as string
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (parsed?.start && parsed?.end) {
+            operatingHoursVal = { start: parsed.start, end: parsed.end }
+          }
+        }
+      } catch (e) {
+        // ignore and use default
+      }
+
       setSystemSettings({
         autoConfirmBookings: Boolean(settingsMap.get("auto_confirm_bookings")) || false,
         maintenanceMode: Boolean(settingsMap.get("maintenance_mode")) || false,
+        slotDuration: slotDurationVal,
+        operatingHours: operatingHoursVal,
       })
+
+      // Generate and set time slots based on parsed settings
+      const generated = generateTimeSlots(operatingHoursVal, slotDurationVal)
+      setTimeSlots(generated)
     }
   }
 
